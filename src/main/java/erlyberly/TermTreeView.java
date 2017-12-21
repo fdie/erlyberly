@@ -36,6 +36,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.Clipboard;
@@ -66,6 +67,7 @@ public class TermTreeView extends TreeView<TermTreeItem> {
         decompileFunContextMenu.setOnAction(this::onDecompileFun);
 
         setContextMenu(new ContextMenu(copyMenuItem, dictMenuItem, decompileFunContextMenu, hexViewMenuItem));
+        getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     public void onHexView(ActionEvent e) {
@@ -265,11 +267,22 @@ public class TermTreeView extends TreeView<TermTreeItem> {
         }
     }
 
-    private void copyTerms(TreeItem item, StringBuilder sbuilder) {
+    private void copyTerms(TreeItem item, StringBuilder sbuilder, int level) {
+        for (int iter = 0; iter < level; iter++) {
+            sbuilder.append("   ");
+        }
+        Object value = item.getValue();
+        if (value != null) {
+            sbuilder.append(value.toString()).append('\n');
+        }
         for (Object obj : item.getChildren()) {
-            copyTerms((TreeItem) obj, sbuilder);
+            copyTerms((TreeItem) obj, sbuilder, level + 1);
         }
         copyToClipboard(sbuilder);
+    }
+
+    private void copyTerms(TreeItem item, StringBuilder sbuilder) {
+        copyTerms(item, sbuilder, 0);
     }
 
     private void copyToClipboard(StringBuilder sbuilder) {
